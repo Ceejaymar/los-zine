@@ -1,5 +1,24 @@
+import { Loader } from '@react-three/drei';
+import { Canvas } from '@react-three/fiber';
+import { Suspense } from 'react';
+
+import Experience from './components/experience';
+import UI from './components/ui';
+
 function App() {
-	return <h1>Hello World</h1>;
+	return (
+		<>
+			<UI />
+			<Loader />
+			<Canvas shadows camera={{ position: [-0.5, 1, 4], fov: 45 }}>
+				<group position-y={0}>
+					<Suspense fallback={null}>
+						<Experience />
+					</Suspense>
+				</group>
+			</Canvas>
+		</>
+	);
 }
 
 export default App;
