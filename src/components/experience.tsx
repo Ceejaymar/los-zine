@@ -8,7 +8,7 @@ export default function Experience() {
       <Float
         rotation-x={-Math.PI / 4}
         floatIntensity={1}
-        speed={1}
+        speed={0.1}
         rotationIntensity={2}
       >
         <Zine />
@@ -17,7 +17,7 @@ export default function Experience() {
       <Environment preset="studio"></Environment>
       <directionalLight
         position={[2, 5, 2]}
-        intensity={2.5}
+        intensity={0.3}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}

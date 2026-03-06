@@ -1,4 +1,4 @@
-import { useCursor, useHelper, useTexture } from "@react-three/drei";
+import { useCursor, useTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useAtom } from "jotai";
 import { easing } from "maath";
@@ -8,9 +8,9 @@ import {
   BoxGeometry,
   Color,
   Float32BufferAttribute,
+  type Group,
   MeshStandardMaterial,
   Skeleton,
-  SkeletonHelper,
   SkinnedMesh,
   SRGBColorSpace,
   Uint16BufferAttribute,
@@ -31,8 +31,8 @@ type PageProps = {
 };
 const easingFactor = 0.5;
 const easingFactorFold = 0.3;
-const insideCurveStrength = 0.18;
-const outsideCurveStrength = 0.05;
+const insideCurveStrength = 0.17;
+const outsideCurveStrength = 0.03;
 const turningCurveStrength = 0.09;
 
 const PAGE_WIDTH = 1.28;
@@ -89,7 +89,7 @@ const pageMaterials = [
 pages.forEach((page) => {
   useTexture.preload([`/textures/${page.front}.jpg`]);
   useTexture.preload([`/textures/${page.back}.jpg`]);
-  useTexture.preload([`/textures/book-cover-roughness.jpg`]);
+  useTexture.preload([`/textures/book-cover-roughness.png`]);
 });
 
 export default function Page({
@@ -104,11 +104,11 @@ export default function Page({
     `/textures/${pageData.front}.jpg`,
     `/textures/${pageData.back}.jpg`,
     ...(number === 0 || number === pages.length - 1
-      ? [`/textures/book-cover-roughness.jpg`]
+      ? [`/textures/book-cover-roughness.png`]
       : []),
   ]);
   picture.colorSpace = picture2.colorSpace = SRGBColorSpace;
-  const group = useRef();
+  const group = useRef<Group>(null);
   const turnedAt = useRef(0);
   const lastOpened = useRef(opened);
 
@@ -178,7 +178,7 @@ export default function Page({
       );
 
     if (lastOpened.current !== opened) {
-      turnedAt.current = +new Date();
+      turnedAt.current = Date.now();
       lastOpened.current = opened;
     }
 
@@ -194,6 +194,7 @@ export default function Page({
 
     for (let i = 0; i < bones.length; i++) {
       const target = i === 0 ? group.current : bones[i];
+      if (!target) continue;
 
       const insideCurveIntensity = i < 8 ? Math.sin(i * 0.2 + 0.25) : 0;
       const outsideCurveIntensity = i >= 8 ? Math.cos(i * 0.3 - 0.09) : 0;
