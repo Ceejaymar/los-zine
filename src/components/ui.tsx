@@ -4,12 +4,12 @@ import { useEffect } from "react";
 const pictures = [
   "page-1",
   "page-2",
-  "DSC00966",
-  "DSC00983",
-  "DSC01011",
-  "DSC01040",
-  "DSC01064",
-  "DSC01071",
+  "page-3",
+  "page-4",
+  "page-5.mp4",
+  "page-6",
+  "page-7",
+  "page-8",
 ];
 
 export const pageAtom = atom(0);

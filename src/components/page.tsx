@@ -1,4 +1,4 @@
-import { useCursor, useTexture } from "@react-three/drei";
+import { useCursor, useHelper, useTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useAtom } from "jotai";
 import { easing } from "maath";
@@ -11,10 +11,12 @@ import {
   type Group,
   MeshStandardMaterial,
   Skeleton,
+  SkeletonHelper,
   SkinnedMesh,
   SRGBColorSpace,
   Uint16BufferAttribute,
   Vector3,
+  VideoTexture,
 } from "three";
 import { degToRad, MathUtils } from "three/src/math/MathUtils.js";
 import { pageAtom, pages } from "./ui";
@@ -29,6 +31,7 @@ type PageProps = {
   opened: boolean;
   bookClosed: boolean;
 };
+
 const easingFactor = 0.5;
 const easingFactorFold = 0.3;
 const insideCurveStrength = 0.17;
@@ -86,9 +89,16 @@ const pageMaterials = [
   new MeshStandardMaterial({ color: "#111" }),
 ];
 
+// Helper variables for handling MP4s dynamically
+const BLANK =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+const isVideo = (str: string) => str.endsWith(".mp4");
+const getTexturePath = (str: string) =>
+  isVideo(str) ? `/textures/${str}` : `/textures/${str}.jpg`;
+
 pages.forEach((page) => {
-  useTexture.preload([`/textures/${page.front}.jpg`]);
-  useTexture.preload([`/textures/${page.back}.jpg`]);
+  if (!isVideo(page.front)) useTexture.preload([getTexturePath(page.front)]);
+  if (!isVideo(page.back)) useTexture.preload([getTexturePath(page.back)]);
   useTexture.preload([`/textures/book-cover-roughness.png`]);
 });
 
@@ -100,14 +110,51 @@ export default function Page({
   bookClosed,
   ...props
 }: PageProps & React.ComponentProps<"group">) {
-  const [picture, picture2, pictureRoughness] = useTexture([
-    `/textures/${pageData.front}.jpg`,
-    `/textures/${pageData.back}.jpg`,
+  const frontIsVid = isVideo(pageData.front);
+  const backIsVid = isVideo(pageData.back);
+
+  const [pictureImg, picture2Img, pictureRoughness] = useTexture([
+    frontIsVid ? BLANK : getTexturePath(pageData.front),
+    backIsVid ? BLANK : getTexturePath(pageData.back),
     ...(number === 0 || number === pages.length - 1
       ? [`/textures/book-cover-roughness.png`]
       : []),
   ]);
-  picture.colorSpace = picture2.colorSpace = SRGBColorSpace;
+
+  const frontVideoTex = useMemo(() => {
+    if (!frontIsVid) return null;
+    const vid = document.createElement("video");
+    vid.src = getTexturePath(pageData.front);
+    vid.crossOrigin = "Anonymous";
+    vid.playsInline = true;
+    vid.loop = true;
+    vid.muted = true;
+    vid.play();
+    const tex = new VideoTexture(vid);
+    tex.colorSpace = SRGBColorSpace;
+    return tex;
+  }, [pageData.front, frontIsVid]);
+
+  const backVideoTex = useMemo(() => {
+    if (!backIsVid) return null;
+    const vid = document.createElement("video");
+    vid.src = getTexturePath(pageData.back);
+    vid.crossOrigin = "Anonymous";
+    vid.playsInline = true;
+    vid.loop = true;
+    vid.muted = true;
+    vid.play();
+    const tex = new VideoTexture(vid);
+    tex.colorSpace = SRGBColorSpace;
+    return tex;
+  }, [pageData.back, backIsVid]);
+
+  const picture = frontIsVid && frontVideoTex ? frontVideoTex : pictureImg;
+  const picture2 = backIsVid && backVideoTex ? backVideoTex : picture2Img;
+
+  if (picture) picture.colorSpace = SRGBColorSpace;
+  if (picture2) picture2.colorSpace = SRGBColorSpace;
+
   const group = useRef<Group>(null);
   const turnedAt = useRef(0);
   const lastOpened = useRef(opened);
