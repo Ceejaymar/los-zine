@@ -4,7 +4,7 @@ import Page from "./page";
 import { pageAtom, pages } from "./ui";
 
 export default function Zine({ ...props }) {
-  const [page, setPage] = useAtom(pageAtom);
+  const [page, _setPage] = useAtom(pageAtom);
   const [delayedPage, setDelayedPage] = useState(page);
 
   useEffect(() => {
