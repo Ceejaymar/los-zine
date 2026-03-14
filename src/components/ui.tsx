@@ -35,6 +35,7 @@ pages.push({
 export default function UI() {
   const [page, setPage] = useAtom(pageAtom);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: page is a trigger dependency to replay the sound on page change
   useEffect(() => {
     const audio = new Audio("/audio/page-flip.mp3");
     audio.play();

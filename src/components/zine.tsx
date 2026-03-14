@@ -24,6 +24,7 @@ export default function Zine({ ...props }) {
           if (page < delayedPage) {
             return delayedPage - 1;
           }
+          return delayedPage;
         }
       });
     };

@@ -1,4 +1,4 @@
-import { useCursor, useHelper, useTexture } from "@react-three/drei";
+import { useCursor, useTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useAtom } from "jotai";
 import { easing } from "maath";
@@ -11,7 +11,6 @@ import {
   type Group,
   MeshStandardMaterial,
   Skeleton,
-  SkeletonHelper,
   SkinnedMesh,
   SRGBColorSpace,
   Uint16BufferAttribute,
@@ -216,13 +215,11 @@ export default function Page({
   useFrame((_, delta) => {
     if (!skinnedMeshRef.current) return;
 
+    const materials = skinnedMeshRef.current.material as MeshStandardMaterial[];
+
     const emissiveIntensity = highlighted ? 0.22 : 0;
-    skinnedMeshRef.current.material[4].emissiveIntensity =
-      skinnedMeshRef.current.material[5].emissiveIntensity = MathUtils.lerp(
-        skinnedMeshRef.current.material[4].emissiveIntensity,
-        emissiveIntensity,
-        0.1,
-      );
+    materials[4].emissiveIntensity = materials[5].emissiveIntensity =
+      MathUtils.lerp(materials[4].emissiveIntensity, emissiveIntensity, 0.1);
 
     if (lastOpened.current !== opened) {
       turnedAt.current = Date.now();
@@ -293,6 +290,7 @@ export default function Page({
   useCursor(highlighted);
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: R3F group is a Three.js object, not an HTML element
     <group
       {...props}
       ref={group}
